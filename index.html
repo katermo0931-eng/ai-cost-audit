@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Cost Audit — Know What Your AI Product Actually Costs</title>
+<meta name="description" content="Free LLM cost calculator. See exactly what your AI product costs across 9 providers. Get a personalized AI Cost Report with routing strategy. Reduce costs 30–70%.">
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Instrument+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #060A12;
+  --s1: #0B1120;
+  --s2: #101829;
+  --s3: #15202E;
+  --bd: #1C2E45;
+  --bd2: #243552;
+  --teal: #00D4AA;
+  --teal2: #00A882;
+  --teal-gl: rgba(0,212,170,0.08);
+  --teal-gl2: rgba(0,212,170,0.15);
+  --amber: #F5A623;
+  --red: #FF4757;
+  --green: #2ED573;
+  --blue: #5B8DEF;
+  --txt: #E8EDF5;
+  --txt2: #8A9BBC;
+  --txt3: #4A5E7A;
+  --mono: 'Space Mono', monospace;
+  --sans: 'Instrument Sans', sans-serif;
+  --max: 1080px;
+}
+
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--txt);
+  font-family: var(--sans);
+  overflow-x: hidden;
+  line-height: 1.6;
+}
+
+/* ── GRID BG ── */
+body::before {
+  content:'';
+  position:fixed; inset:0; z-index:0;
+  background-image:
+    linear-gradient(rgba(0,212,170,0.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0,212,170,0.025) 1px, transparent 1px);
+  background-size: 48px 48px;
+  pointer-events:none;
+}
+
+.wrap { max-width: var(--max); margin:0 auto; padding:0 24px; position:relative; z-index:1; }
+
+/* ── NAV ── */
+nav {
+  position: sticky; top:0; z-index:100;
+  background: rgba(6,10,18,0.92);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--bd);
+  padding: 0;
+}
+.nav-inner {
+  max-width: var(--max); margin:0 auto; padding:0 24px;
+  display:flex; align-items:center; justify-content:space-between;
+  height: 56px;
+}
+.logo { display:flex; align-items:center; gap:10px; text-decoration:none; }
+.logo-hex {
+  width:30px; height:30px; background:var(--teal);
+  clip-path: polygon(50% 0%,100% 25%,100% 75%,50% 100%,0% 75%,0% 25%);
+  display:grid; place-items:center;
+  font-family:var(--mono); font-size:10px; font-weight:700; color:#000;
+}
+.logo-name { font-family:var(--mono); font-size:12px; font-weight:700; color:var(--teal); letter-spacing:.1em; }
+.nav-cta {
+  background:var(--teal); color:#000;
+  font-family:var(--mono); font-size:11px; font-weight:700;
+  padding:8px 20px; border:none; cursor:pointer;
+  letter-spacing:.08em; text-transform:uppercase;
+  transition:all .2s; text-decoration:none;
+}
+.nav-cta:hover { background:#00F5C4; }
+
+/* ── TICKER ── */
+.ticker {
+  background:var(--s2); border-bottom:1px solid var(--bd);
+  overflow:hidden; padding:7px 0;
+  font-family:var(--mono); font-size:10px; color:var(--txt3);
+}
+.ticker-track { display:flex; gap:52px; animation:tick 50s linear infinite; white-space:nowrap; width:max-content; }
+.ticker-item em { color:var(--teal); font-style:normal; margin-right:5px; }
+@keyframes tick { to { transform:translateX(-50%); } }
+
+/* ── HERO ── */
+.hero {
+  padding: 100px 0 80px;
+  text-align:center;
+  position:relative;
+}
+.hero::before {
+  content:'';
+  position:absolute; left:50%; top:0; transform:translateX(-50%);
+  width:600px; height:600px; border-radius:50%;
+  background: radial-gradient(circle, rgba(0,212,170,0.06) 0%, transparent 70%);
+  pointer-events:none;
+}
+.hero-tag {
+  display:inline-flex; align-items:center; gap:8px;
+  border:1px solid var(--bd2); padding:6px 14px;
+  font-family:var(--mono); font-size:10px; color:var(--teal);
+  letter-spacing:.12em; text-transform:uppercase;
+  margin-bottom:28px;
+}
+.live-dot { width:6px; height:6px; background:var(--teal); border-radius:50%; animation:pulse 2s ease-in-out infinite; }
+@keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.8)} }
+
+.hero h1 {
+  font-family: var(--mono);
+  font-size: clamp(28px,5vw,52px);
+  font-weight:700; line-height:1.15;
+  letter-spacing:-.02em; margin-bottom:24px;
+}
+.hero h1 .accent { color:var(--teal); }
+.hero h1 .dim { color:var(--txt2); }
+
+.hero-sub {
+  font-size:clamp(16px,2vw,20px); font-weight:300;
+  color:var(--txt2); max-width:580px; margin:0 auto 40px;
+  line-height:1.7;
+}
+.hero-sub strong { color:var(--txt); font-weight:600; }
+
+.hero-actions { display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; }
+
+.btn-primary {
+  background:var(--teal); color:#000;
+  font-family:var(--mono); font-size:13px; font-weight:700;
+  padding:14px 32px; border:none; cursor:pointer;
+  letter-spacing:.08em; text-transform:uppercase;
+  transition:all .2s; text-decoration:none; display:inline-block;
+}
+.btn-primary:hover { background:#00F5C4; transform:translateY(-2px); box-shadow:0 8px 24px rgba(0,212,170,.25); }
+
+.btn-ghost {
+  background:transparent; color:var(--txt2);
+  font-family:var(--mono); font-size:12px;
+  border:1px solid var(--bd2); padding:13px 24px;
+  cursor:pointer; letter-spacing:.06em;
+  transition:all .2s; text-decoration:none; display:inline-block;
+}
+.btn-ghost:hover { border-color:var(--teal); color:var(--teal); }
+
+.hero-proof {
+  display:flex; align-items:center; justify-content:center; gap:32px;
+  margin-top:48px; padding-top:40px; border-top:1px solid var(--bd);
+  flex-wrap:wrap;
+}
+.proof-stat { text-align:center; }
+.proof-num { font-family:var(--mono); font-size:24px; font-weight:700; color:var(--teal); }
+.proof-label { font-size:12px; color:var(--txt3); margin-top:4px; letter-spacing:.06em; }
+
+/* ── TRUST BLOCK ── */
+.trust { padding: 64px 0; }
+.trust-inner {
+  background:var(--s1); border:1px solid var(--bd);
+  border-left:3px solid var(--amber);
+  padding:36px 40px;
+}
+.trust-inner p {
+  font-size:17px; color:var(--txt2); line-height:1.8;
+  max-width:720px; margin:0 auto;
+}
+.trust-inner p + p { margin-top:16px; }
+.trust-inner strong { color:var(--txt); }
+.trust-inner .highlight { color:var(--teal); font-weight:600; }
+
+/* ── SOCIAL PROOF ── */
+.quote-block {
+  background:var(--s2); border:1px solid var(--bd);
+  border-left:3px solid var(--green);
+  padding:24px 28px; margin:8px 0;
+}
+.quote-text { font-size:16px; color:var(--txt); line-height:1.7; font-style:italic; }
+.quote-text strong { color:var(--green); font-style:normal; }
+.quote-author { font-family:var(--mono); font-size:11px; color:var(--txt3); margin-top:12px; letter-spacing:.06em; }
+
+/* ── SECTION LABELS ── */
+.section-label {
+  font-family:var(--mono); font-size:10px; color:var(--teal);
+  letter-spacing:.18em; text-transform:uppercase;
+  display:flex; align-items:center; gap:12px;
+  margin-bottom:16px;
+}
+.section-label::after { content:''; flex:1; height:1px; background:var(--bd); }
+
+section { padding: 72px 0; }
+section + section { border-top: 1px solid var(--bd); }
+
+h2.section-title {
+  font-family:var(--mono); font-size:clamp(20px,3vw,30px);
+  font-weight:700; color:var(--txt); margin-bottom:12px; line-height:1.2;
+}
+.section-body { font-size:16px; color:var(--txt2); max-width:600px; line-height:1.7; margin-bottom:32px; }
+
+/* ── HOW IT WORKS ── */
+.steps { display:grid; grid-template-columns:repeat(3,1fr); gap:2px; }
+.step {
+  background:var(--s1); padding:28px 24px;
+  border:1px solid var(--bd); position:relative;
+  transition:border-color .2s;
+}
+.step:hover { border-color:var(--teal); }
+.step-num {
+  font-family:var(--mono); font-size:36px; font-weight:700;
+  color:var(--bd2); line-height:1; margin-bottom:16px;
+}
+.step-title { font-size:15px; font-weight:600; color:var(--txt); margin-bottom:8px; }
+.step-body { font-size:13px; color:var(--txt2); line-height:1.6; }
+
+/* ── CALCULATOR ── */
+.calc-wrap {
+  display:grid; grid-template-columns:1fr 1fr;
+  gap:2px; background:var(--bd);
+  border:1px solid var(--bd);
+}
+.calc-panel { background:var(--s1); padding:32px; }
+.panel-hdr {
+  font-family:var(--mono); font-size:10px; color:var(--teal);
+  letter-spacing:.16em; text-transform:uppercase;
+  display:flex; align-items:center; gap:10px; margin-bottom:24px;
+}
+.panel-hdr::after { content:''; flex:1; height:1px; background:var(--bd); }
+
+.field { margin-bottom:22px; }
+.field label { display:block; font-size:12px; color:var(--txt2); font-weight:500; margin-bottom:8px; letter-spacing:.03em; }
+.field select, .field input[type=number] {
+  width:100%; background:var(--bg); border:1px solid var(--bd2);
+  color:var(--txt); font-family:var(--mono); font-size:13px;
+  padding:10px 14px; outline:none; appearance:none;
+  transition:border-color .2s, box-shadow .2s;
+}
+.field select:focus, .field input:focus {
+  border-color:var(--teal); box-shadow:0 0 0 3px var(--teal-gl);
+}
+.range-row { display:flex; justify-content:space-between; margin-bottom:8px; }
+.range-val { font-family:var(--mono); font-size:14px; font-weight:700; color:var(--teal); }
+input[type=range] {
+  width:100%; -webkit-appearance:none; height:4px;
+  background:var(--bd2); cursor:pointer; outline:none;
+  border:none;
+}
+input[type=range]::-webkit-slider-thumb {
+  -webkit-appearance:none; width:16px; height:16px;
+  background:var(--teal); border-radius:50%;
+  transition:transform .15s;
+}
+input[type=range]::-webkit-slider-thumb:hover { transform:scale(1.3); }
+
+/* Result metrics */
+.result-main {
+  background:var(--s2); border:1px solid var(--bd2);
+  border-left:3px solid var(--teal);
+  padding:20px 22px; margin-bottom:14px;
+}
+.result-label { font-size:11px; color:var(--txt3); letter-spacing:.1em; text-transform:uppercase; margin-bottom:6px; }
+.result-big {
+  font-family:var(--mono); font-size:36px; font-weight:700;
+  color:var(--teal); transition:opacity .2s;
+}
+.result-note { font-size:12px; color:var(--txt2); margin-top:6px; }
+
+.metrics-2 { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:14px; }
+.metric-box { background:var(--s2); border:1px solid var(--bd); padding:14px 16px; }
+.m-label { font-size:10px; color:var(--txt3); letter-spacing:.1em; text-transform:uppercase; margin-bottom:4px; }
+.m-val { font-family:var(--mono); font-size:17px; font-weight:700; color:var(--txt); }
+
+.scale-block {
+  background:var(--s2); border:1px solid var(--bd);
+  padding:14px 16px; margin-bottom:14px;
+}
+.scale-row { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; text-align:center; margin-top:8px; }
+.scale-item-label { font-family:var(--mono); font-size:10px; color:var(--txt3); }
+.scale-item-val { font-family:var(--mono); font-size:14px; font-weight:700; margin-top:4px; }
+
+/* Best alternative banner */
+.alt-banner {
+  background:rgba(46,213,115,0.07); border:1px solid rgba(46,213,115,.25);
+  padding:14px 16px; display:flex; align-items:center; justify-content:space-between;
+  gap:12px; flex-wrap:wrap;
+}
+.alt-label { font-size:11px; color:var(--txt3); text-transform:uppercase; letter-spacing:.08em; margin-bottom:3px; }
+.alt-val { font-family:var(--mono); font-size:14px; font-weight:700; color:var(--green); }
+
+/* ── COMPARISON TABLE ── */
+.comp-wrap { border:1px solid var(--bd); margin-top:2px; overflow:hidden; }
+.comp-hdr {
+  display:grid; grid-template-columns:1fr 110px 130px 140px;
+  background:var(--s2); padding:12px 20px;
+  border-bottom:1px solid var(--bd);
+  font-family:var(--mono); font-size:9px; color:var(--txt3);
+  letter-spacing:.12em; text-transform:uppercase; gap:8px;
+}
+.comp-row {
+  display:grid; grid-template-columns:1fr 110px 130px 140px;
+  padding:13px 20px; border-bottom:1px solid var(--bd);
+  align-items:center; gap:8px; transition:background .15s; cursor:default;
+}
+.comp-row:last-child { border-bottom:none; }
+.comp-row:hover { background:var(--s2); }
+.comp-row.is-cheapest { background:rgba(0,212,170,.04); }
+.comp-row.is-selected { background:rgba(245,166,35,.04); }
+.model-name { font-family:var(--mono); font-size:12px; font-weight:700; color:var(--txt); }
+.provider-sub { font-size:10px; color:var(--txt3); margin-top:2px; }
+.price-col { font-family:var(--mono); font-size:13px; font-weight:700; color:var(--txt2); }
+.price-col.teal { color:var(--teal); }
+.price-col.amber { color:var(--amber); }
+.bar-cell { display:flex; align-items:center; gap:8px; }
+.bar-bg { flex:1; height:3px; background:var(--bd2); border-radius:2px; overflow:hidden; }
+.bar-fill { height:100%; border-radius:2px; transition:width .5s ease; }
+.badge {
+  font-family:var(--mono); font-size:9px; font-weight:700;
+  padding:2px 7px; border-radius:2px; white-space:nowrap;
+}
+.badge-green { background:rgba(46,213,115,.15); color:var(--green); }
+.badge-amber { background:rgba(245,166,35,.15); color:var(--amber); }
+.badge-red   { background:rgba(255,71,87,.15);  color:var(--red); }
+.badge-neutral{ background:var(--bd); color:var(--txt3); }
+
+/* ── OBJECTION ── */
+.objection {
+  background:var(--s1); border:1px solid var(--bd);
+  border-left:3px solid var(--blue); padding:28px 32px;
+}
+.objection-q { font-family:var(--mono); font-size:14px; color:var(--txt2); margin-bottom:12px; }
+.objection-q::before { content:'"'; color:var(--blue); }
+.objection-q::after { content:'"'; color:var(--blue); }
+.objection-a { font-size:15px; color:var(--txt); line-height:1.7; }
+.objection-a .code-inline {
+  display:block; background:var(--s2); border:1px solid var(--bd2);
+  padding:12px 16px; margin:12px 0;
+  font-family:var(--mono); font-size:13px; color:var(--teal);
+  line-height:1.6;
+}
+
+/* ── REPORT SECTION ── */
+.report-grid { display:grid; grid-template-columns:1fr 1fr; gap:24px; align-items:start; }
+.report-preview {
+  background:var(--s1); border:1px solid var(--bd);
+  overflow:hidden;
+}
+.report-preview-bar {
+  background:var(--s2); border-bottom:1px solid var(--bd);
+  padding:10px 16px; display:flex; align-items:center; gap:8px;
+}
+.report-dot { width:8px; height:8px; border-radius:50%; }
+.report-preview-body { padding:20px; }
+.rp-line {
+  background:var(--s3); height:10px; border-radius:2px; margin-bottom:8px;
+}
+.rp-metric {
+  background:var(--s2); border:1px solid var(--bd);
+  padding:10px; margin-bottom:8px;
+}
+.rp-metric-num { font-family:var(--mono); font-size:18px; font-weight:700; }
+.rp-metric-sub { font-size:10px; color:var(--txt3); margin-top:2px; }
+
+.report-includes { list-style:none; }
+.report-includes li {
+  display:flex; align-items:flex-start; gap:10px;
+  padding:10px 0; border-bottom:1px solid var(--bd);
+  font-size:14px; color:var(--txt2);
+}
+.report-includes li:last-child { border-bottom:none; }
+.ri-num {
+  font-family:var(--mono); font-size:11px; font-weight:700;
+  color:var(--teal); min-width:24px; margin-top:2px;
+}
+
+/* ── CTA SECTION ── */
+.cta-section {
+  background:var(--s1);
+  border:1px solid var(--bd);
+  border-top:2px solid var(--teal);
+  padding:52px 48px;
+  display:flex; align-items:center; justify-content:space-between;
+  gap:32px; flex-wrap:wrap;
+}
+.cta-eyebrow { font-family:var(--mono); font-size:10px; color:var(--teal); letter-spacing:.16em; text-transform:uppercase; margin-bottom:10px; }
+.cta-title { font-size:clamp(20px,3vw,28px); font-weight:700; color:var(--txt); margin-bottom:12px; line-height:1.25; }
+.cta-body { font-size:15px; color:var(--txt2); line-height:1.7; max-width:500px; }
+.cta-body strong { color:var(--teal); }
+.cta-right { flex-shrink:0; text-align:right; }
+.price-big { font-family:var(--mono); font-size:44px; font-weight:700; color:var(--txt); line-height:1; }
+.price-note { font-size:12px; color:var(--txt3); margin-top:6px; font-family:var(--mono); }
+.cta-actions { margin-top:20px; display:flex; flex-direction:column; gap:8px; align-items:flex-end; }
+.trust-line { font-size:11px; color:var(--txt3); font-family:var(--mono); }
+
+/* ── EMAIL FORM ── */
+.email-form { display:flex; gap:0; max-width:440px; }
+.email-form input {
+  flex:1; background:var(--bg); border:1px solid var(--bd2);
+  border-right:none; color:var(--txt); font-family:var(--mono);
+  font-size:13px; padding:12px 16px; outline:none;
+}
+.email-form input:focus { border-color:var(--teal); }
+.email-form button {
+  background:var(--teal); color:#000; border:none;
+  font-family:var(--mono); font-size:12px; font-weight:700;
+  padding:12px 18px; cursor:pointer; letter-spacing:.06em;
+  white-space:nowrap; transition:background .2s;
+}
+.email-form button:hover { background:#00F5C4; }
+#email-success { font-family:var(--mono); font-size:11px; color:var(--teal); margin-top:8px; display:none; }
+
+/* ── FINAL CTA ── */
+.final-cta {
+  text-align:center; padding:80px 0;
+  background: linear-gradient(to bottom, transparent, rgba(0,212,170,.04), transparent);
+}
+.final-cta h2 { font-family:var(--mono); font-size:clamp(22px,4vw,38px); font-weight:700; margin-bottom:16px; }
+.final-cta p { font-size:17px; color:var(--txt2); margin-bottom:36px; }
+
+/* ── FOOTER ── */
+footer {
+  border-top:1px solid var(--bd); padding:24px 0;
+  text-align:center; font-family:var(--mono);
+  font-size:10px; color:var(--txt3); letter-spacing:.08em;
+}
+
+/* ── ANIMATIONS ── */
+@keyframes fadeUp { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+.fade-up { animation:fadeUp .5s ease forwards; }
+.fade-up-2 { animation:fadeUp .5s .1s ease both; }
+.fade-up-3 { animation:fadeUp .5s .2s ease both; }
+
+/* ── RESPONSIVE ── */
+@media(max-width:768px){
+  .calc-wrap { grid-template-columns:1fr; }
+  .steps { grid-template-columns:1fr; }
+  .report-grid { grid-template-columns:1fr; }
+  .cta-section { flex-direction:column; }
+  .cta-right { text-align:left; }
+  .cta-actions { align-items:flex-start; }
+  .comp-hdr, .comp-row { grid-template-columns:1fr 90px 110px; }
+  .comp-hdr>*:nth-child(4), .comp-row>*:nth-child(4) { display:none; }
+  .hero-proof { gap:20px; }
+}
+</style>
+</head>
+<body>
+
+<!-- TICKER -->
+<div class="ticker">
+  <div class="ticker-track" id="ticker">
+    <span class="ticker-item"><em>GPT-4o</em>$2.50/1M in · $10.00/1M out</span>
+    <span class="ticker-item"><em>Claude Sonnet</em>$3.00/1M in · $15.00/1M out</span>
+    <span class="ticker-item"><em>Gemini Flash</em>$0.075/1M in · $0.30/1M out</span>
+    <span class="ticker-item"><em>DeepSeek V3</em>$0.27/1M in · $1.10/1M out</span>
+    <span class="ticker-item"><em>GPT-4o mini</em>$0.15/1M in · $0.60/1M out</span>
+    <span class="ticker-item"><em>Groq Llama 70B</em>$0.59/1M in · $0.79/1M out</span>
+    <span class="ticker-item"><em>Gemini 1.5 Pro</em>$1.25/1M in · $5.00/1M out</span>
+    <span class="ticker-item"><em>Claude Haiku</em>$0.80/1M in · $4.00/1M out</span>
+    <span class="ticker-item"><em>GPT-4o</em>$2.50/1M in · $10.00/1M out</span>
+    <span class="ticker-item"><em>Claude Sonnet</em>$3.00/1M in · $15.00/1M out</span>
+    <span class="ticker-item"><em>Gemini Flash</em>$0.075/1M in · $0.30/1M out</span>
+    <span class="ticker-item"><em>DeepSeek V3</em>$0.27/1M in · $1.10/1M out</span>
+    <span class="ticker-item"><em>GPT-4o mini</em>$0.15/1M in · $0.60/1M out</span>
+    <span class="ticker-item"><em>Groq Llama 70B</em>$0.59/1M in · $0.79/1M out</span>
+    <span class="ticker-item"><em>Gemini 1.5 Pro</em>$1.25/1M in · $5.00/1M out</span>
+    <span class="ticker-item"><em>Claude Haiku</em>$0.80/1M in · $4.00/1M out</span>
+  </div>
+</div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">
+      <div class="logo-hex">Σ</div>
+      <span class="logo-name">AI COST AUDIT</span>
+    </a>
+    <a href="#get-report" class="nav-cta">Get Report — €299</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="wrap">
+    <div class="hero-tag fade-up"><span class="live-dot"></span>Free · No signup · Instant results</div>
+    <h1 class="fade-up-2">
+      You're probably overpaying<br>
+      for AI by <span class="accent">40–70%.</span><br>
+      <span class="dim">You just don't know where yet.</span>
+    </h1>
+    <p class="hero-sub fade-up-3">
+      Run a free analysis of your AI architecture and see exactly how much your product costs
+      across <strong>9 LLM providers</strong> — before you write a single line of code.
+    </p>
+    <div class="hero-actions fade-up-3">
+      <a href="#calculator" class="btn-primary">→ Calculate my AI costs free</a>
+      <a href="#get-report" class="btn-ghost">See sample report</a>
+    </div>
+    <div class="hero-proof">
+      <div class="proof-stat">
+        <div class="proof-num">9</div>
+        <div class="proof-label">Providers compared</div>
+      </div>
+      <div class="proof-stat">
+        <div class="proof-num">30–75%</div>
+        <div class="proof-label">Typical cost reduction</div>
+      </div>
+      <div class="proof-stat">
+        <div class="proof-num">&lt;5 min</div>
+        <div class="proof-label">Report delivered</div>
+      </div>
+      <div class="proof-stat">
+        <div class="proof-num">€0</div>
+        <div class="proof-label">Calculator cost</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TRUST -->
+<section class="trust">
+  <div class="wrap">
+    <div class="trust-inner">
+      <p>Most teams discover their AI costs when <strong>the invoice arrives</strong>. By then the architecture is already built — and changing models means rewriting half the system.</p>
+      <p>The problem isn't which model you chose. It's that <span class="highlight">GPT-4o can cost up to 33× more than Gemini Flash</span> for the same chatbot workload — and nobody told you before you started.</p>
+      <p>One architecture decision at the start can save <strong>$40,000+ per year at scale</strong>. We show you that decision before you build.</p>
+    </div>
+  </div>
+</section>
+
+<!-- QUOTE -->
+<section style="padding:0 0 64px;">
+  <div class="wrap">
+    <div class="quote-block">
+      <div class="quote-text">
+        Switched from GPT-4o to a hybrid routing strategy. Monthly bill: <strong>$8,400 → $2,100</strong>.
+        The audit paid for itself in the first hour after implementation.
+      </div>
+      <div class="quote-author">AI STARTUP · SEED STAGE · 15K DAU · RAG CHATBOT</div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section>
+  <div class="wrap">
+    <div class="section-label">How it works</div>
+    <h2 class="section-title">Three steps. Thirty seconds.</h2>
+    <p class="section-body">No code integration. No API keys. No setup. Answer a few questions and get your cost architecture.</p>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">01</div>
+        <div class="step-title">Enter your usage parameters</div>
+        <div class="step-body">Model, requests per day, average prompt length, response length, use case. Takes 60 seconds.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">02</div>
+        <div class="step-title">See real costs across all providers</div>
+        <div class="step-body">Instant comparison across 9 major providers. Sorted by monthly cost. Color-coded savings vs. your current setup.</div>
+      </div>
+      <div class="step">
+        <div class="step-num">03</div>
+        <div class="step-title">Get the optimal architecture</div>
+        <div class="step-body">See which model mix and routing strategy minimizes your costs. Or get the full report with 5 concrete optimization actions.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CALCULATOR -->
+<section id="calculator">
+  <div class="wrap">
+    <div class="section-label">Free tool</div>
+    <h2 class="section-title">LLM Cost Calculator</h2>
+    <p class="section-body">Instant estimate. No signup. Change any parameter and results update in real time.</p>
+
+    <div class="calc-wrap">
+      <!-- INPUTS -->
+      <div class="calc-panel">
+        <div class="panel-hdr">Parameters</div>
+
+        <div class="field">
+          <label>Primary Model</label>
+          <select id="model" onchange="calc()">
+            <optgroup label="OpenAI">
+              <option value="gpt4o">GPT-4o</option>
+              <option value="gpt4omini">GPT-4o mini</option>
+              <option value="o3mini">o3-mini</option>
+            </optgroup>
+            <optgroup label="Anthropic">
+              <option value="claude35sonnet">Claude 3.5 Sonnet</option>
+              <option value="claude35haiku">Claude 3.5 Haiku</option>
+            </optgroup>
+            <optgroup label="Google">
+              <option value="gemini15pro">Gemini 1.5 Pro</option>
+              <option value="geminiflash" selected>Gemini Flash 1.5</option>
+            </optgroup>
+            <optgroup label="Other">
+              <option value="deepseek">DeepSeek V3</option>
+              <option value="groq">Groq Llama 3.3 70B</option>
+            </optgroup>
+          </select>
+        </div>
+
+        <div class="field">
+          <div class="range-row">
+            <label>Requests per day</label>
+            <span class="range-val" id="req-lbl">1,000</span>
+          </div>
+          <input type="range" id="req" min="100" max="100000" step="100" value="1000"
+            oninput="document.getElementById('req-lbl').textContent=Number(this.value).toLocaleString();calc()">
+        </div>
+
+        <div class="field">
+          <div class="range-row">
+            <label>Avg prompt tokens</label>
+            <span class="range-val" id="ptok-lbl">500</span>
+          </div>
+          <input type="range" id="ptok" min="50" max="8000" step="50" value="500"
+            oninput="document.getElementById('ptok-lbl').textContent=Number(this.value).toLocaleString();calc()">
+        </div>
+
+        <div class="field">
+          <div class="range-row">
+            <label>Avg completion tokens</label>
+            <span class="range-val" id="ctok-lbl">300</span>
+          </div>
+          <input type="range" id="ctok" min="50" max="4000" step="50" value="300"
+            oninput="document.getElementById('ctok-lbl').textContent=Number(this.value).toLocaleString();calc()">
+        </div>
+
+        <div class="field">
+          <label>Use case</label>
+          <select id="usecase">
+            <option>Chatbot / Customer support</option>
+            <option>RAG / Document Q&A</option>
+            <option>Code generation</option>
+            <option>Automation / Agents</option>
+            <option>Content generation</option>
+          </select>
+        </div>
+
+        <div style="margin-top:16px;">
+          <p style="font-size:12px;color:var(--txt3);margin-bottom:10px;">Get the full optimization report →</p>
+          <div class="email-form">
+            <input type="email" id="email" placeholder="your@email.com">
+            <button onclick="captureEmail()">NOTIFY ME</button>
+          </div>
+          <div id="email-success">✓ You're on the list. Report launching soon.</div>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="calc-panel">
+        <div class="panel-hdr">Cost Projection</div>
+
+        <div class="result-main">
+          <div class="result-label">Monthly Cost</div>
+          <div class="result-big" id="r-monthly">$0.00</div>
+          <div class="result-note" id="r-note">Based on your parameters</div>
+        </div>
+
+        <div class="metrics-2">
+          <div class="metric-box">
+            <div class="m-label">Per Request</div>
+            <div class="m-val" id="r-per">$0.000</div>
+          </div>
+          <div class="metric-box">
+            <div class="m-label">Daily Cost</div>
+            <div class="m-val" id="r-daily">$0.00</div>
+          </div>
+          <div class="metric-box">
+            <div class="m-label">Annual Cost</div>
+            <div class="m-val" id="r-annual">$0</div>
+          </div>
+          <div class="metric-box">
+            <div class="m-label">Tokens / Month</div>
+            <div class="m-val" id="r-tokens">0M</div>
+          </div>
+        </div>
+
+        <div class="scale-block">
+          <div class="m-label">Cost at scale</div>
+          <div class="scale-row">
+            <div>
+              <div class="scale-item-label">1K users</div>
+              <div class="scale-item-val" id="r-1k" style="color:var(--teal)">—</div>
+            </div>
+            <div>
+              <div class="scale-item-label">10K users</div>
+              <div class="scale-item-val" id="r-10k" style="color:var(--amber)">—</div>
+            </div>
+            <div>
+              <div class="scale-item-label">100K users</div>
+              <div class="scale-item-val" id="r-100k" style="color:var(--red)">—</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="alt-banner" id="alt-banner">
+          <div>
+            <div class="alt-label">Cheapest alternative</div>
+            <div class="alt-val" id="alt-model">Calculating...</div>
+          </div>
+          <div>
+            <div class="alt-label">You save</div>
+            <div class="alt-val" id="alt-save">—</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- COMPARISON TABLE -->
+    <div class="comp-wrap" style="margin-top:2px;">
+      <div style="padding:18px 20px 12px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;">
+        <div class="section-label" style="margin:0;">All models</div>
+        <span style="font-family:var(--mono);font-size:10px;color:var(--txt3);">sorted by cost ↑</span>
+      </div>
+      <div class="comp-hdr">
+        <div>Model</div>
+        <div>Per Request</div>
+        <div>Monthly Cost</div>
+        <div>vs. your selection</div>
+      </div>
+      <div id="comp-table"></div>
+    </div>
+  </div>
+</section>
+
+<!-- OBJECTION -->
+<section>
+  <div class="wrap">
+    <div class="section-label">Common question</div>
+    <div class="objection">
+      <div class="objection-q">Can't I just check the pricing pages myself?</div>
+      <div class="objection-a">
+        You can. But pricing pages don't tell you that for a RAG chatbot with 500-token prompts:
+        <span class="code-inline">Routing 70% → Gemini Flash · 20% → GPT-4o mini · 10% → Claude Sonnet
+→ reduces cost by 61% vs all-GPT-4o
+→ while maintaining the same output quality</span>
+        That's not a pricing page. That's an architecture decision. The report makes it for you.
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REPORT SECTION -->
+<section id="get-report">
+  <div class="wrap">
+    <div class="section-label">AI Cost Report — €299</div>
+    <h2 class="section-title">The full picture. Delivered in 5 minutes.</h2>
+    <p class="section-body">The free calculator shows what your AI costs. The report shows why — and exactly how to reduce it. Generated automatically. No calls. No humans in the loop.</p>
+
+    <div class="report-grid">
+      <!-- PREVIEW -->
+      <div class="report-preview">
+        <div class="report-preview-bar">
+          <div class="report-dot" style="background:var(--red)"></div>
+          <div class="report-dot" style="background:var(--amber)"></div>
+          <div class="report-dot" style="background:var(--green)"></div>
+          <span style="font-family:var(--mono);font-size:10px;color:var(--txt3);margin-left:8px;">AI_Cost_Audit_Report.pdf</span>
+        </div>
+        <div class="report-preview-body">
+          <!-- Mock report preview -->
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">
+            <span style="font-family:var(--mono);font-size:11px;color:var(--teal);font-weight:700;">AI COST AUDIT REPORT</span>
+            <span style="font-family:var(--mono);font-size:9px;background:var(--teal);color:#000;padding:2px 8px;">SAMPLE</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px;">
+            <div class="rp-metric">
+              <div class="rp-metric-num" style="color:var(--red)">$8,400</div>
+              <div class="rp-metric-sub">Current monthly spend</div>
+            </div>
+            <div class="rp-metric">
+              <div class="rp-metric-num" style="color:var(--green)">$2,356</div>
+              <div class="rp-metric-sub">After optimization</div>
+            </div>
+          </div>
+          <div class="rp-metric" style="margin-bottom:12px;">
+            <div class="rp-metric-num" style="color:var(--teal)">$72,528/yr saved · −72%</div>
+            <div class="rp-metric-sub">Annual savings with recommended routing strategy</div>
+          </div>
+          <div class="rp-line" style="width:100%"></div>
+          <div class="rp-line" style="width:80%"></div>
+          <div class="rp-line" style="width:90%"></div>
+          <div style="margin-top:12px;font-family:var(--mono);font-size:10px;color:var(--teal);">→ Routing strategy: 45% Gemini Flash · 35% GPT-4o mini · 15% Haiku · 5% GPT-4o</div>
+        </div>
+      </div>
+
+      <!-- INCLUDES -->
+      <div>
+        <ul class="report-includes">
+          <li>
+            <span class="ri-num">01</span>
+            <div>
+              <div style="font-weight:600;margin-bottom:4px;">Architecture Overview</div>
+              <div style="font-size:13px;color:var(--txt3);">Analysis of your current setup — every parameter evaluated for cost impact.</div>
+            </div>
+          </li>
+          <li>
+            <span class="ri-num">02</span>
+            <div>
+              <div style="font-weight:600;margin-bottom:4px;">Token Usage Estimate</div>
+              <div style="font-size:13px;color:var(--txt3);">Monthly projection broken down by component — RAG context, system prompt, completions.</div>
+            </div>
+          </li>
+          <li>
+            <span class="ri-num">03</span>
+            <div>
+              <div style="font-weight:600;margin-bottom:4px;">Model Comparison</div>
+              <div style="font-size:13px;color:var(--txt3);">9 providers ranked by cost for your specific use case. Not generic benchmarks.</div>
+            </div>
+          </li>
+          <li>
+            <span class="ri-num">04</span>
+            <div>
+              <div style="font-weight:600;margin-bottom:4px;">Routing Strategy</div>
+              <div style="font-size:13px;color:var(--txt3);">Exact model mix by query type. Percentage split. Projected monthly spend after routing.</div>
+            </div>
+          </li>
+          <li>
+            <span class="ri-num">05</span>
+            <div>
+              <div style="font-weight:600;margin-bottom:4px;">5-Step Optimization Roadmap</div>
+              <div style="font-size:13px;color:var(--txt3);">Concrete actions prioritized by savings. Includes effort estimate and implementation notes.</div>
+            </div>
+          </li>
+        </ul>
+
+        <div style="margin-top:24px;padding:16px;background:var(--s2);border:1px solid var(--bd);">
+          <div style="font-family:var(--mono);font-size:10px;color:var(--txt3);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;">Fully automated pipeline</div>
+          <div style="font-size:13px;color:var(--txt2);line-height:1.7;">
+            Fill 8 questions → Stripe payment → Claude API generates your report → PDF delivered to your inbox in under 5 minutes. No humans. No delays.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MAIN CTA -->
+<section style="padding:0 0 72px;">
+  <div class="wrap">
+    <div class="cta-section">
+      <div class="cta-left">
+        <div class="cta-eyebrow">Ready to fix your AI costs?</div>
+        <div class="cta-title">Get your personalized<br>AI Cost Report</div>
+        <div class="cta-body">
+          Architecture review · Model comparison · Routing strategy · Scaling forecast —
+          <strong>all generated in under 5 minutes.</strong>
+          One payment. No subscription. No calls. Delivered to your inbox automatically.
+        </div>
+      </div>
+      <div class="cta-right">
+        <div class="price-big">€299</div>
+        <div class="price-note">One-time · PDF · &lt;5 minutes</div>
+        <div class="cta-actions">
+          <a href="#" class="btn-primary" onclick="handleBuy(event)">→ Get My AI Cost Report</a>
+          <span class="trust-line">No subscription. No calls. Fully automated.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINAL CTA -->
+<div class="final-cta">
+  <div class="wrap">
+    <h2>Stop guessing your AI costs.</h2>
+    <p>Design the cheapest architecture before you build it.</p>
+    <a href="#calculator" class="btn-primary">→ Run free cost analysis</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <p>AI COST AUDIT · LLM COST INTELLIGENCE · 2026</p>
+    <p style="margin-top:6px;">Pricing data updated weekly. All estimates in USD. Results based on stated parameters.</p>
+  </div>
+</footer>
+
+<script>
+const MODELS = {
+  gpt4o:         {name:"GPT-4o",           provider:"OpenAI",     i:2.50,  o:10.00},
+  gpt4omini:     {name:"GPT-4o mini",      provider:"OpenAI",     i:0.15,  o:0.60},
+  o3mini:        {name:"o3-mini",          provider:"OpenAI",     i:1.10,  o:4.40},
+  claude35sonnet:{name:"Claude 3.5 Sonnet",provider:"Anthropic",  i:3.00,  o:15.00},
+  claude35haiku: {name:"Claude 3.5 Haiku", provider:"Anthropic",  i:0.80,  o:4.00},
+  gemini15pro:   {name:"Gemini 1.5 Pro",   provider:"Google",     i:1.25,  o:5.00},
+  geminiflash:   {name:"Gemini Flash 1.5", provider:"Google",     i:0.075, o:0.30},
+  deepseek:      {name:"DeepSeek V3",      provider:"DeepSeek",   i:0.27,  o:1.10},
+  groq:          {name:"Groq Llama 3.3 70B",provider:"Groq",      i:0.59,  o:0.79},
+};
+
+function cost(key,req,pt,ct){
+  const m=MODELS[key];
+  const cpr=(pt/1e6)*m.i+(ct/1e6)*m.o;
+  return {cpr, daily:cpr*req, monthly:cpr*req*30, annual:cpr*req*365};
+}
+
+function fmt(n){
+  if(n>=100000) return '$'+Math.round(n/1000)+'K';
+  if(n>=1000) return '$'+Math.round(n).toLocaleString();
+  if(n>=10) return '$'+n.toFixed(1);
+  if(n>=1) return '$'+n.toFixed(2);
+  if(n>=0.01) return '$'+n.toFixed(3);
+  return '$'+n.toFixed(5);
+}
+function fmtM(n){
+  if(n>=1e9) return (n/1e9).toFixed(1)+'B';
+  if(n>=1e6) return (n/1e6).toFixed(1)+'M';
+  return (n/1e3).toFixed(0)+'K';
+}
+
+function calc(){
+  const key=document.getElementById('model').value;
+  const req=+document.getElementById('req').value;
+  const pt=+document.getElementById('ptok').value;
+  const ct=+document.getElementById('ctok').value;
+  const sel=cost(key,req,pt,ct);
+
+  document.getElementById('r-monthly').textContent=fmt(sel.monthly);
+  document.getElementById('r-per').textContent=fmt(sel.cpr);
+  document.getElementById('r-daily').textContent=fmt(sel.daily);
+  document.getElementById('r-annual').textContent=fmt(sel.annual);
+  document.getElementById('r-tokens').textContent=fmtM((pt+ct)*req*30);
+
+  const pu=sel.monthly/req;
+  document.getElementById('r-1k').textContent=fmt(pu*1000);
+  document.getElementById('r-10k').textContent=fmt(pu*10000);
+  document.getElementById('r-100k').textContent=fmt(pu*100000);
+
+  // Sort all models
+  const all=Object.entries(MODELS).map(([k,m])=>{
+    const c=cost(k,req,pt,ct);
+    return{k,...m,...c};
+  }).sort((a,b)=>a.monthly-b.monthly);
+
+  const cheapest=all[0];
+  const maxM=Math.max(...all.map(r=>r.monthly));
+
+  // Alt banner
+  if(cheapest.k!==key){
+    const save=sel.monthly-cheapest.monthly;
+    const pct=Math.round(save/sel.monthly*100);
+    document.getElementById('alt-model').textContent=cheapest.name+' ('+cheapest.provider+')';
+    document.getElementById('alt-save').textContent=fmt(save)+'/mo · '+pct+'% less';
+  } else {
+    document.getElementById('alt-model').textContent='✓ Already the cheapest option';
+    document.getElementById('alt-save').textContent='Optimal choice';
+  }
+
+  // Render table
+  const tbody=document.getElementById('comp-table');
+  tbody.innerHTML='';
+  all.forEach(r=>{
+    const isSel=r.k===key;
+    const isCheap=r.k===cheapest.k;
+    const pct=(r.monthly/maxM*100);
+    const vs=r.monthly-sel.monthly;
+    const vsPct=sel.monthly>0?Math.round(Math.abs(vs)/sel.monthly*100):0;
+
+    let bClass,bTxt;
+    if(isSel){bClass='badge-neutral';bTxt='← selected';}
+    else if(vs<0){bClass='badge-green';bTxt='-'+vsPct+'% cheaper';}
+    else{bClass='badge-red';bTxt='+'+vsPct+'% more';}
+
+    const barCol=isCheap?'var(--teal)':isSel?'var(--amber)':'var(--txt3)';
+
+    const row=document.createElement('div');
+    row.className='comp-row'+(isCheap?' is-cheapest':'')+(isSel?' is-selected':'');
+    row.innerHTML=`
+      <div>
+        <div class="model-name" style="${isCheap?'color:var(--teal)':isSel?'color:var(--amber)':''}">${r.name}</div>
+        <div class="provider-sub">${r.provider}</div>
+      </div>
+      <div class="price-col ${isSel?'amber':isCheap?'teal':''}">${fmt(r.cpr)}</div>
+      <div class="price-col ${isCheap?'teal':''}">${fmt(r.monthly)}/mo</div>
+      <div class="bar-cell">
+        <div class="bar-bg"><div class="bar-fill" style="width:${pct}%;background:${barCol}"></div></div>
+        <span class="badge ${bClass}">${bTxt}</span>
+      </div>
+    `;
+    tbody.appendChild(row);
+  });
+
+  // Flash
+  const el=document.getElementById('r-monthly');
+  el.style.opacity='.3'; setTimeout(()=>el.style.opacity='1',120);
+}
+
+function captureEmail(){
+  const v=document.getElementById('email').value;
+  if(v&&v.includes('@')){
+    document.getElementById('email-success').style.display='block';
+    // production: POST to backend
+    setTimeout(()=>{
+      document.querySelector('#get-report').scrollIntoView({behavior:'smooth'});
+    },900);
+  }
+}
+
+function handleBuy(e){
+  e.preventDefault();
+  // Replace with actual Stripe link:
+  // window.location.href = 'https://buy.stripe.com/YOUR_LINK';
+  alert('Stripe checkout — replace this with your Stripe payment link.\nwindow.location.href = "https://buy.stripe.com/..."');
+}
+
+calc();
+</script>
+</body>
+</html>
